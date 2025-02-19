@@ -1,10 +1,6 @@
 import { getRandomInt } from "./utils"
 import type { JokeBaseType, JokeType} from "./utils"
-
-type VoteInfnormation = {
-  label: string
-  value?: number  
-}
+import type { VoteInfnormation } from "./utils"
 
 let prevJoke = -1
 
@@ -18,7 +14,14 @@ const apiJoke = {
     while ((i = getRandomInt(0, jokesStubs.length) || 1) && i == prevJoke) {}
     prevJoke = i
 
-    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(jokesStubs[i]), 500))
+    const joke = jokesStubs[i]
+
+    // DEBUG
+    /*setTimeout(() => {
+      joke.votes[0].updateVote(100)  
+    }, 2000)*/
+
+    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(joke), 500))
   },
   postVote: async (jokeId: string, votes: VoteInfnormation[]) => {
     let result: VoteInfnormation[] = []
@@ -26,24 +29,50 @@ const apiJoke = {
     jokesStubs.find(joke => joke.id === jokeId)?.votes.forEach(vote => {
       const changedVote = votes.find(voteI => vote.label === voteI.label)
       if (changedVote) {
-        vote.value += changedVote.value || 1;
+        vote.value += changedVote.value || 1;        
         result.push(vote)
       }
     }) 
     return result   
-  }
+  },
 }
 
 export default apiJoke
 
 // * * * DEBUG ui * * *
 
+class Vote {
+  jokeId: string
+  #value: number
+  label: string
+  fireVote?: (vote: number) => void
+
+  constructor(value: number, label: string, jokeId: string) {
+    this.#value = value
+    this.label = label
+    this.jokeId = jokeId
+  }
+
+  set value(value: number) {
+    this.#value = value
+    this.fireVote?.(value)
+  }
+
+  get value() {
+    return this.#value
+  }
+
+  async updateVote(value: number) {
+    return apiJoke.postVote(this.jokeId, [{label: this.label, value}])
+  }
+}
+
 function createJoke(jokeBase: JokeBaseType): JokeType {
   return Object.assign({}, jokeBase, {
     votes: [
-      { value: getRandomInt(0, 10), label: "😂" },
-      { value: getRandomInt(0, 10), label: "👍" },
-      { value: getRandomInt(0, 10), label: "❤️" },
+      new Vote(getRandomInt(0, 10), "😂", jokeBase.id),
+      new Vote(getRandomInt(0, 10), "👍", jokeBase.id),
+      new Vote(getRandomInt(0, 10), "❤️", jokeBase.id),
     ],
     availableVotes: ["😂", "👍", "❤️"],
   })

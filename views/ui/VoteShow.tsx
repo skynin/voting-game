@@ -1,28 +1,29 @@
-import { useState } from "react";
-import apiJoke from "../ApiJoke";
+import { useEffect, useState } from "react"
+import type { VoteItemType } from "../utils"
 
 type VoteProps = {
-  jokeId: string
-  vote: {
-    value: number
-    label: string
-  }
+  vote: VoteItemType
 }
 
-function VoteShow({jokeId, vote}: VoteProps) {
+function VoteShow({vote}: VoteProps) {
   
   const [isChecked, setIsChecked] = useState(false)
+  const [voteValue, setVoteValue] = useState(vote.value)
+
+  useEffect(() => {   
+    vote.fireVote = setVoteValue    
+  }, [])
 
   function handleClick() {
     // "!isChecked" means we try to post the vote
-    apiJoke.postVote(jokeId, [{label: vote.label, value: !isChecked ? 1 : -1}])
+    vote.updateVote(!isChecked ? 1 : -1)    
     .then(() => setIsChecked(!isChecked))
     .catch((error) => console.error('Failed to post the joke vote:', error))
   }
 
   return (
     <div>
-      <p>{vote.value}<br/>
+      <p>{voteValue}<br/>
       {vote.label}</p>      
       <div>
       <input type="checkbox" onChange={handleClick} checked={isChecked} />

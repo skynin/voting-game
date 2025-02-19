@@ -11,7 +11,7 @@ function ReactionShow({ jokeId, votes, availableVotes }: ReactionProps) {
           .filter((vote) => availableVotes.includes(vote.label))
           .map((vote) => (
             <li key={`${jokeId}-${vote.label}`}>
-              <VoteShow jokeId={jokeId} vote={vote} />
+              <VoteShow vote={vote} />
             </li>
           ))}
       </ul>
