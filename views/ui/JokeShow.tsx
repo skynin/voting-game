@@ -10,7 +10,7 @@ function JokeShow({joke} : JokeProps) {
     <div>
       <p>{joke.question}</p>
       <p>{joke.answer}</p>
-      <ReactionShow votes={joke.votes} availableVotes={joke.availableVotes}/>
+      <ReactionShow jokeId={joke.id} votes={joke.votes} availableVotes={joke.availableVotes}/>
     </div>
   )
 }

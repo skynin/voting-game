@@ -1,15 +1,17 @@
-import { JokeVotesType } from "../utils";
-import VoteShow from "./VoteShow";
+import { JokeVotesType } from "../utils"
+import VoteShow from "./VoteShow"
 
-function ReactionShow({ votes, availableVotes }: JokeVotesType) {
+type ReactionProps = JokeVotesType & {jokeId: string}
+
+function ReactionShow({ jokeId, votes, availableVotes }: ReactionProps) {
   return (
     <div>
       <ul className="votes">
         {votes
           .filter((vote) => availableVotes.includes(vote.label))
           .map((vote) => (
-            <li key={vote.label}>
-              <VoteShow vote={vote} />
+            <li key={`${jokeId}-${vote.label}`}>
+              <VoteShow jokeId={jokeId} vote={vote} />
             </li>
           ))}
       </ul>
@@ -17,4 +19,4 @@ function ReactionShow({ votes, availableVotes }: JokeVotesType) {
   );
 }
 
-export default ReactionShow;
+export default ReactionShow

@@ -18,7 +18,7 @@ const apiJoke = {
     while ((i = getRandomInt(0, jokesStubs.length) || 1) && i == prevJoke) {}
     prevJoke = i
 
-    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(jokesStubs[i]), 2000))
+    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(jokesStubs[i]), 500))
   },
   postVote: async (jokeId: string, votes: VoteInfnormation[]) => {
     let result: VoteInfnormation[] = []
