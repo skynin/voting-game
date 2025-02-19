@@ -2,15 +2,11 @@ import { getRandomInt } from "./utils"
 import type { JokeBaseType, JokeType} from "./utils"
 import type { VoteInfnormation } from "./utils"
 
+// @ts-ignore
 let prevJoke = -1
-
-const apiJoke = {
-  getRandomJoke: async () => {
-    /*const response = await fetch("/api/joke");
-    const json = await response.json();
-    return json;*/
-
-    let i = prevJoke
+// @ts-ignore
+const getRandomJokeUI = async (): Promise<JokeType> => {
+   let i = prevJoke
     while ((i = getRandomInt(0, jokesStubs.length) || 1) && i == prevJoke) {}
     prevJoke = i
 
@@ -21,8 +17,22 @@ const apiJoke = {
       joke.votes[0].updateVote(100)  
     }, 2000)*/
 
-    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(joke), 500))
-  },
+    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(joke), 500))  
+}
+const getRandomJoke = async (): Promise<JokeType> => {
+  const response = await fetch("/api/joke")
+  const json = jokeFromDTO((await response.json()) as JokeType)
+
+  const iJoke = jokesStubs.findIndex((joke) => joke.id === json.id)
+
+  if (iJoke !== -1) {
+    return jokesStubs[iJoke] = json
+  }
+  return json
+}
+
+const apiJoke = {
+  getRandomJoke,
   postVote: async (jokeId: string, votes: VoteInfnormation[]) => {
     let result: VoteInfnormation[] = []
 
@@ -38,8 +48,6 @@ const apiJoke = {
 }
 
 export default apiJoke
-
-// * * * DEBUG ui * * *
 
 class Vote {
   jokeId: string
@@ -66,6 +74,14 @@ class Vote {
     return apiJoke.postVote(this.jokeId, [{label: this.label, value}])
   }
 }
+
+function jokeFromDTO(joke: JokeType) : JokeType{
+  return Object.assign({}, joke, {
+    votes: joke.votes.map((vote) => new Vote(vote.value, vote.label, joke.id)),
+  })
+}
+
+// * * * DEBUG ui * * *
 
 function createJoke(jokeBase: JokeBaseType): JokeType {
   return Object.assign({}, jokeBase, {

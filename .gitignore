@@ -131,3 +131,4 @@ build
 .pnp.*
 
 ztmp/
+db/

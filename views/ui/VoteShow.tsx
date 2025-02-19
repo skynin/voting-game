@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import type { VoteItemType } from "../utils"
+import type { VoteType } from "../utils"
 
 type VoteProps = {
-  vote: VoteItemType
+  vote: VoteType
 }
 
 function VoteShow({vote}: VoteProps) {

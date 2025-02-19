@@ -1,20 +1,6 @@
- // The maximum is exclusive and the minimum is inclusive
-function getRandomInt(min: number, max: number) {
-  const minCeiled = Math.ceil(min)
-  const maxFloored = Math.floor(max)
-  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
-}
+import type {JokeBaseType, VoteInfnormation} from "../models/index"
+import { getRandomInt } from "../models/index"
 
-type VoteInfnormation = {
-  label: string
-  value?: number  
-}
-
-type JokeBaseType = {
-  id: string
-  question: string
-  answer: string
-}
 type VoteType = {
   value: number
   label: string
@@ -41,5 +27,5 @@ export type {
   JokeVotesType,
   JokeType,
   VoteInfnormation,
-  VoteType as VoteItemType
+  VoteType
 }

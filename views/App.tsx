@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import apiJoke from './ApiJoke'
 import './App.css'
 import JokeShow from './ui/JokeShow'
@@ -8,8 +8,16 @@ import { emptyJoke } from './utils'
 function App() {
   const [joke, setJoke] = useState(emptyJoke)
   const [isLoading, setIsLoading] = useState(false)
+  const initialLoadRef = useRef(false) // use a ref to prevent double-loading
 
-  useEffect(loadJoke,[emptyJoke])
+  useEffect(() => {
+    // Note: The double-invocation only happens in development mode. In production, your effect will only run once.
+    // loadJoke()
+    if (!initialLoadRef.current) {
+      initialLoadRef.current = true
+      loadJoke()
+    }
+  }, [])
     
   function loadJoke() {
     setIsLoading(true)
