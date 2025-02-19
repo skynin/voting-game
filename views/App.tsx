@@ -1,41 +1,31 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import honoLogo from '/hono.svg'
+import { useEffect, useState } from 'react'
+import apiJoke from './ApiJoke'
 import './App.css'
-import Joke from './Joke.js'
+import JokeShow from './ui/JokeShow'
+import NextJokeButton from './ui/NextJokeButton'
+import { emptyJoke } from './utils'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [joke, setJoke] = useState(emptyJoke)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const countFunc = () => setCount((count) => count + 1)
+  useEffect(loadJoke,[emptyJoke])
+    
+  function loadJoke() {
+    setIsLoading(true)
+    apiJoke.getRandomJoke().then((newJoke) => {
+      setJoke(newJoke)
+      setIsLoading(false)
+    }).catch((error) => {
+      console.error('Failed to load joke:', error)
+      setIsLoading(false) 
+    })
+  } 
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-        <a href="https://hono.dev" target="_blank">
-          <img src={honoLogo} className="Hono logo" alt="Hono logo" />
-        </a>        
-      </div>
-      <h1>Vite + React + Hono</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <Joke countFunc={countFunc}/>
-        <p>
-          Edit <code>views/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <>    
+      <JokeShow joke={joke}/>
+      <NextJokeButton act={loadJoke} disabled={isLoading}/>
     </>
   )
 }
