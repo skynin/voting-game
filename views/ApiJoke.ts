@@ -2,15 +2,11 @@ import { getRandomInt } from "./utils"
 import type { JokeBaseType, JokeType} from "./utils"
 import type { VoteInfnormation } from "./utils"
 
+// @ts-ignore
 let prevJoke = -1
-
-const apiJoke = {
-  getRandomJoke: async () => {
-    /*const response = await fetch("/api/joke");
-    const json = await response.json();
-    return json;*/
-
-    let i = prevJoke
+// @ts-ignore
+const getRandomJokeUI = async (): Promise<JokeType> => {
+   let i = prevJoke
     while ((i = getRandomInt(0, jokesStubs.length) || 1) && i == prevJoke) {}
     prevJoke = i
 
@@ -21,25 +17,62 @@ const apiJoke = {
       joke.votes[0].updateVote(100)  
     }, 2000)*/
 
-    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(joke), 500))
-  },
+    return new Promise<JokeType>((resolve) => setTimeout(() => resolve(joke), 500))  
+}
+const getRandomJoke = async (): Promise<JokeType> => {
+  const response = await fetch("/api/joke")
+  const joke = jokeFromDTO((await response.json()) as JokeType)
+
+  const iJoke = jokesStubs.findIndex((joke) => joke.id === joke.id)
+
+  if (iJoke !== -1) {
+    return jokesStubs[iJoke] = joke
+  }
+  jokesStubs.push(joke)
+  if (jokesStubs.length > 100) {
+    jokesStubs.shift()
+  }
+  return joke
+}
+
+const apiJoke = {
+  getRandomJoke,
   postVote: async (jokeId: string, votes: VoteInfnormation[]) => {
+    const response = await fetch("/api/joke/"+jokeId, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(votes)      
+    })
+
     let result: VoteInfnormation[] = []
 
+    return response.json().then((votes: VoteInfnormation[]) => {
+      jokesStubs.find(joke => joke.id === jokeId)?.votes.forEach(vote => {
+        const changedVote = votes.find(voteI => vote.label === voteI.label)
+        if (changedVote) {
+          vote.value = changedVote.value!
+          result.push(vote)
+        }
+      })
+
+      return result
+    })
+    /* DEBUG ui
+    
     jokesStubs.find(joke => joke.id === jokeId)?.votes.forEach(vote => {
       const changedVote = votes.find(voteI => vote.label === voteI.label)
       if (changedVote) {
         vote.value += changedVote.value || 1;        
         result.push(vote)
       }
-    }) 
-    return result   
+    })
+    return result */
   },
 }
 
 export default apiJoke
-
-// * * * DEBUG ui * * *
 
 class Vote {
   jokeId: string
@@ -62,10 +95,18 @@ class Vote {
     return this.#value
   }
 
-  async updateVote(value: number) {
+  async updateVote(value: number): Promise<VoteInfnormation[]> {
     return apiJoke.postVote(this.jokeId, [{label: this.label, value}])
   }
 }
+
+function jokeFromDTO(joke: JokeType) : JokeType{
+  return Object.assign({}, joke, {
+    votes: joke.votes.map((vote) => new Vote(vote.value, vote.label, joke.id)),
+  })
+}
+
+// * * * DEBUG ui * * *
 
 function createJoke(jokeBase: JokeBaseType): JokeType {
   return Object.assign({}, jokeBase, {
