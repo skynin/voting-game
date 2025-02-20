@@ -41,9 +41,12 @@ class Vote {
 function createJoke(jokeBase: JokeBaseType): JokeType {
   return Object.assign({}, jokeBase, {
     votes: [
-      new Vote(getRandomInt(0, 10), "😂"),
+      new Vote(0, "😂"),
+      new Vote(0, "👍"),
+      new Vote(0, "❤️"),
+      /*new Vote(getRandomInt(0, 10), "😂"),
       new Vote(getRandomInt(0, 10), "👍"),
-      new Vote(getRandomInt(0, 10), "❤️"),
+      new Vote(getRandomInt(0, 10), "❤️"),*/
     ],
     availableVotes: ["😂", "👍", "❤️"],
   })

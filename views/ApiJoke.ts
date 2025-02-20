@@ -21,29 +21,54 @@ const getRandomJokeUI = async (): Promise<JokeType> => {
 }
 const getRandomJoke = async (): Promise<JokeType> => {
   const response = await fetch("/api/joke")
-  const json = jokeFromDTO((await response.json()) as JokeType)
+  const joke = jokeFromDTO((await response.json()) as JokeType)
 
-  const iJoke = jokesStubs.findIndex((joke) => joke.id === json.id)
+  const iJoke = jokesStubs.findIndex((joke) => joke.id === joke.id)
 
   if (iJoke !== -1) {
-    return jokesStubs[iJoke] = json
+    return jokesStubs[iJoke] = joke
   }
-  return json
+  jokesStubs.push(joke)
+  if (jokesStubs.length > 100) {
+    jokesStubs.shift()
+  }
+  return joke
 }
 
 const apiJoke = {
   getRandomJoke,
   postVote: async (jokeId: string, votes: VoteInfnormation[]) => {
+    const response = await fetch("/api/joke/"+jokeId, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(votes)      
+    })
+
     let result: VoteInfnormation[] = []
 
+    return response.json().then((votes: VoteInfnormation[]) => {
+      jokesStubs.find(joke => joke.id === jokeId)?.votes.forEach(vote => {
+        const changedVote = votes.find(voteI => vote.label === voteI.label)
+        if (changedVote) {
+          vote.value = changedVote.value!
+          result.push(vote)
+        }
+      })
+
+      return result
+    })
+    /* DEBUG ui
+    
     jokesStubs.find(joke => joke.id === jokeId)?.votes.forEach(vote => {
       const changedVote = votes.find(voteI => vote.label === voteI.label)
       if (changedVote) {
         vote.value += changedVote.value || 1;        
         result.push(vote)
       }
-    }) 
-    return result   
+    })
+    return result */
   },
 }
 
@@ -70,7 +95,7 @@ class Vote {
     return this.#value
   }
 
-  async updateVote(value: number) {
+  async updateVote(value: number): Promise<VoteInfnormation[]> {
     return apiJoke.postVote(this.jokeId, [{label: this.label, value}])
   }
 }
